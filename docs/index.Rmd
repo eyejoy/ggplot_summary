@@ -1,0 +1,403 @@
+--- 
+title: "ggplot summary" 
+author: "Sung" 
+date: "2018-06-19" 
+output: 
+  html_document: 
+    toc: true 
+    toc_float: true 
+mainfont: NanumGothic 
+fontsize: 12pt 
+lang: Korean 
+--- 
+
+```{r setup, include=FALSE} 
+# global option 
+knitr::opts_chunk$set( 
+  comment = "##>", 
+  collapse = T, 
+  eval = T, 
+  tidy = F, 
+  message = F, 
+  warning = F, 
+  fig.width = 4, 
+  fig.height = 2 
+) 
+# global option 
+options("scipen" = 100, digits = 3) 
+library(ggplot2) 
+library(dplyr) 
+``` 
+
+## 개요 
+
+데이터 분석을 할 때 가장 먼저 해야할 일은 무엇일까? 엑셀로 분석한다면 데이터를 엑셀로 불러와서 작업하면 되겠지만, 엑셀로 통계 프로그램을 사용할 경우에는 데이터를 형태에 맞게 불러오는 것이 우선일 것이다. 필자는 오랜 기간동안 R 프로그램을 사용하고 있다. 일반적으로 책에 나온 예제 데이터는 건수가 적고 잘 정리된 형태이지만, 실제로는 그렇지 않은 경우가 많이 있다. 운이 좋으면 잘 정리된 형태일 수도 있다. 결과적으로 데이터를 불러오는 것을 못한다면 분석을 시작하기도 어려울 것이다.  
+
+데이터를 불러온 이후 데이터가 분석하기 좋은 형태인지 데이터에 오류는 없는지 확인해야 한다. 문제가 있다면 다시 추출해야 할 것이고, 문제가 없다면 분석하기 좋은 형태로 변환해야 할 것이다. 물론 교과서에서는 분석하기 좋은 형태로 변환되어진 데이터를 제공할 것이다. 데이터를 불러왔다면 그 다음 단계로 중요한 것은 데이터를 탐색하는 과정(EDA)이다. 데이터를 탐색하는 과정에서는 요약 통계량이나 차트 형태로 데이터의 정합성을 검증하거나 데이터의 특징을 파악한다. 대부분 분석가들의 업무 프로세스를 보면 분석의 80~90%는 데이터 검증 및 전처리에 소요된다. 
+
+이 문서에서는 분석하기 좋은 형태의 데이터를 가지고 시각화하는 내용을 정리하려고 한다. 내용을 정리하는 가장 중요한 이유는 내가 쓰고 싶은 차트를 작성할 때마다 옵션이 기억안나니 너무 불편해서 정리하려고 한다. 차트는 R의 `ggplot2` 패키지를 활용하여 작성한다. 
+
+
+## 데이터 소개 
+
+모든 데이터는 잘 불러왔다는 가정하에 `ggplot2` 패키지의 `diamonds` 데이터를 사용할 것이다. 이 데이터는 조금 정리해보자.. 
+
+```{r, message = T} 
+diamonds 
+``` 
+
+## 연속형  
+### 1-dimension 
+
+`Histogram`은 연속형 데이터의 분포를 나타내는 차트로, 생성되는 bar의 개수(`bins` 옵션)나 bar의 길이(`binwidth` 옵션)를 지정할 수 있다. y축은 구간에 해당하는 건수이다. 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat)) + 
+    geom_histogram(fill = "gold", color = "white", bins = 100) 
+``` 
+
+`Density`는 연속형 데이터의 분포를 나타내는 차트로 y축은 desity이다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat)) + 
+    geom_density(fill = "gold", color = "white") 
+``` 
+
+`Freqploy`는 연속형 데이터의 분포를 나타내는 차트로 y축은 건수이다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat)) + 
+    geom_freqpoly(color = "gold", bins = 100) 
+``` 
+
+`scatter plot`은 1차원인 경우 x축이 index 값인 점 차트를 생성한다. 대부분 시계열 데이터를 시각화할 때 주로 쓰인다. 
+점이 아닌 선의 경우 `geom_line()`함수를 사용한다. 
+
+```{r} 
+diamonds %>%  
+    mutate(id = 1:n()) %>%  
+    ggplot(aes(x = id, y = carat)) + 
+    geom_point(color = "gold") 
+``` 
+
+### 2-dimension 
+
+`scatter plot`은 x축과 y축에 해당하는 위치에 점 차트를 생성한다.  
+점이 아닌 선의 경우 `geom_line()`함수를 사용한다. 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+``` 
+
+`scatter plot`에 색상 legend를 추가하여 2차원 그래프를 그릴 수 있다. 
+```{r} 
+diamonds %>%  
+    mutate(id = 1:n()) %>%  
+    ggplot(aes(x = id, y = carat)) + 
+    geom_point(aes(color = price)) 
+``` 
+
+### 3-dimension 
+
+2차원 `scatter plot`에 색상 legend를 추가하여 3차원 그래프를 그릴 수 있다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(aes(color = depth)) 
+``` 
+
+`contour plot `으로 3차원 그래프를 그릴 수 있다. 
+```{r} 
+#https://tdhock.github.io/animint/ 
+diamonds %>%  
+    ggplot(aes(x = carat, y = depth)) + 
+    geom_point(color = "lightgray") +  
+    geom_density_2d() 
+``` 
+```{r} 
+
+     
+``` 
+
+
+## 이산형 
+### 1-dimension 
+
+`Bar plot`에 이산형 변수에 해당하는 데이터 건수를 막대 그래프로 생성한다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = cut)) + 
+    geom_bar(color = "white", fill = "navyblue") 
+``` 
+
+아래와 같이 건수를 출력한 이후에도 `bar plot`을 생성할 수 있다. 
+```{r, eval = F} 
+diamonds %>%  
+    group_by(cut) %>% 
+    summarise(cnt = n()) %>%  
+    ggplot(aes(x = cut)) + 
+    geom_bar(aes(y = cnt), stat = "identity", color = "white", fill = "navyblue") 
+``` 
+
+
+### 2-dimension 
+
+`Bar plot`에 색상 legend를 추가하여 2차원 그래프를 그릴 수 있다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = cut, fill = clarity)) + 
+    geom_bar(color = "white") 
+``` 
+
+`Mosaic plot`은 이산형 변수에 해당하는 데이터 건수의 비율을 막대의 넓이와 색상으로 구분하여 보여준다. 
+```{r} 
+library(ggmosaic) 
+diamonds %>%  
+    ggplot(aes(x = product(cut), fill = clarity)) + 
+    geom_mosaic() 
+``` 
+
+### 3-dimension 
+
+색상 legend를 추가하여 2차원 공간에 3차원으로 시각화 할 수 있다. 
+```{r} 
+diamonds %>%  
+    group_by(cut, clarity) %>% 
+    summarise(cnt = n()) %>%  
+    ggplot(aes(x = cut, fill = clarity)) + 
+    geom_bar(aes(y = cnt), stat = "identity", color = "white") 
+``` 
+
+```{r} 
+diamonds %>%  
+    group_by(cut, clarity) %>% 
+    summarise(cnt = n()) %>%  
+    ggplot(aes(x = cut, fill = clarity)) + 
+    geom_bar(aes(y = cnt), stat = "identity", color = "white", position = "dodge") 
+``` 
+
+
+## 조합 (이산형, 연속형) 
+
+### 3-dimension 
+
+2차원 연속형 plot에 이산형 색상 legend를 추가하여 3차원 그래프를 그릴 수 있다. 
+(단, 이산형의 경우 막대 차트에 연속형으로 색상을 입력하는 것은 불가함) 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(aes(color = clarity)) 
+``` 
+
+## 연속형을 이산형으로 바꾸기 
+
+`cut()`함수를 사용하여 연속형 변수를 이산형(`factor`)으로 바꾸고 `label`도 입력할 수 있다. 
+```{r} 
+diamonds %>%  
+    mutate(carat_gp = cut(carat, breaks = c(0, 0.4, 0.7, 1, Inf),  
+                          ordered_result = T, labels = c("~0.4", "~0.7", "~1", "1~"))) %>%  
+    ggplot(aes(x = carat_gp, fill = cut)) + 
+    geom_bar() 
+``` 
+
+
+## 차트 옵션 
+
+### legend 
+`ggplot()`에서는 `fill` 이나 `color` 옵션이 `aes()`함수 안에 존재하게 되는 경우 `legend`가 생성되는데 이를 없애기 위해 `show.legend = F`옵션을 추가할 수 있다. 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = cut, fill = clarity)) + 
+    geom_bar(color = "white", show.legend = F) 
+``` 
+
+### multiple plot 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") + 
+    facet_grid(. ~ cut) 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") + 
+    facet_grid(cut ~ .) 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") + 
+    facet_wrap(~cut, ncol = 2) 
+``` 
+다중 차트에 있는 항목명의 크기, 바탕색 등 변경 가능하다. 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") + 
+    facet_wrap(~cut, ncol = 2) + 
+    theme(strip.text.x = element_text(size = 8, face = "bold"), 
+          strip.background = element_rect(color = "darkgreen")) 
+``` 
+```{r} 
+g1 <- diamonds %>%  
+    filter(cut == "Fair") %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+
+g2 <- diamonds %>%  
+    filter(cut == "Good") %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+
+g3 <- diamonds %>%  
+    filter(cut == "Very Good") %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+
+g4 <- diamonds %>%  
+    filter(cut == "Premium") %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+
+g5 <- diamonds %>%  
+    filter(cut == "Ideal") %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(color = "gold") 
+
+library(gridExtra) 
+grid.arrange(g1, g2, g3, g4, g5, ncol = 2) 
+``` 
+
+### color 
+차트의 형태에 따라서 `color`이나 `fill` 옵션을 사용한다. 연속형이나 이산형 모두 사용이 가능하다. 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = depth, color = price)) + 
+    geom_point(alpha = 0.1) + 
+    scale_color_gradient(low = "yellow", high = "red") 
+``` 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price, color = cut)) + 
+    geom_point(aes(color = cut)) + 
+    scale_color_brewer(type = "qual", palette = 4) 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price, color = cut)) + 
+    geom_point(aes(color = cut)) + 
+    scale_color_brewer(type = "seq", palette = "Reds") 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price, color = cut)) + 
+    geom_point(aes(color = cut)) + 
+    scale_color_brewer(type = "seq", palette = "Greens") 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price, color = cut)) + 
+    geom_point(aes(color = cut)) + 
+    scale_color_brewer(type = "div", palette = 4) 
+``` 
+
+### legend, label, title 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, fill = cut)) + 
+    geom_histogram(color = "white", bins = 100) + 
+    guides(col = guide_legend(ncol = 1)) + 
+    theme(legend.title = element_text(size = 8),  
+          legend.text = element_text(size = 6)) + 
+    labs(x = "xlab",  
+         y = "ylab",  
+         title = "title",  
+         fill = "cutting") 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, fill = cut)) + 
+    geom_histogram(color = "white", bins = 100) + 
+    guides(col = guide_legend(ncol = 1)) 
+``` 
+
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price, size = depth, color = carat)) + 
+    geom_point(alpha = 0.4) + 
+    scale_size_continuous(trans = "exp", range = c(4, 25)) + 
+    scale_colour_continuous(guide = FALSE) + 
+    xlab("weight of the diamond") + 
+    labs(size = "Depth in %" ) + 
+    theme_bw() + 
+    theme(text = element_text(size = 20), 
+          legend.position = c(.95, .05), 
+          legend.justification = c("right", "bottom"), 
+          panel.border = element_blank()) 
+``` 
+
+### axis 
+x축 회전 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(aes(color = clarity)) + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+``` 
+
+x축 지정(이산형) 
+```{r} 
+diamonds %>%  
+    mutate(id = 1:n()) %>%  
+    ggplot(aes(x = id, y = carat)) + 
+    geom_point(color = "gold") + 
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) 
+``` 
+
+x축 지정(범주형) 
+```{r} 
+library(purrr) 
+
+# plot x axis 
+diamonds_x_axis <-  
+    diamonds %>%  
+    mutate(id = as.character(1:n())) %>%  
+    mutate(rownum = row_number()) %>%  
+    filter(rownum %% 10000 == 0) %>%  
+    select(id) %>%  
+    as_vector() 
+
+diamonds %>%  
+    mutate(id = as.character(1:n())) %>%  
+    ggplot(aes(x = id, y = carat)) + 
+    geom_point(color = "gold") + 
+    scale_x_discrete(breaks = diamonds_x_axis) 
+``` 
+
+## 기타 
+### `stat_ellipse()` 타원 그리기 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = price)) + 
+    geom_point(aes(color = clarity))+ 
+    stat_ellipse(aes(color = clarity), type = "t") 
+``` 
+
+### `geom_hex()` 6각형 그리기 
+```{r} 
+diamonds %>%  
+    ggplot(aes(x = carat, y = depth)) + 
+    geom_hex(color = "blue") 
+``` 
